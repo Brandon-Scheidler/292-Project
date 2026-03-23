@@ -11,6 +11,9 @@ from sklearn.metrics import accuracy_score, roc_curve, RocCurveDisplay, confusio
 from sklearn.pipeline import make_pipeline
 from sklearn.linear_model import LogisticRegression
 
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend to save plots instead of showing
+
 # --- Step 1: Data Collection ---
 # Done individually and on everyone's personal device
 
@@ -18,22 +21,22 @@ from sklearn.linear_model import LogisticRegression
 
 # ** Read CSV Data **
 # Jumping Data
-nick_jump_data = pd.read_csv('nickJump.csv')
-print(nick_jump_data.columns)  # <--- Add it here
+brandon_jump_data = pd.read_csv('Brandon/jump.csv', encoding='utf-16')
+print(brandon_jump_data.columns)  # <--- Add it here
 
-ashley_jump_data = pd.read_csv('jumping-Ashley.csv')
-dayna_jump_data = pd.read_csv('dayna-jump.csv')
-nick_jump_data['Label'] = 1     # Assign label 1 for jumping
-ashley_jump_data['Label'] = 1   # Assign label 1 for jumping
-dayna_jump_data['Label'] = 1    # Assign label 1 for jumping
+paolo_jump_data = pd.read_csv('Paolo/jump.csv', encoding='utf-16')
+shayan_jump_data = pd.read_csv('Shayan/jump.csv', encoding='utf-16')
+brandon_jump_data['Label'] = 1     # Assign label 1 for jumping
+paolo_jump_data['Label'] = 1   # Assign label 1 for jumping
+shayan_jump_data['Label'] = 1    # Assign label 1 for jumping
 
 # Walking Data
-nick_walk_data = pd.read_csv('nickWalk.csv')
-ashley_walk_data = pd.read_csv('walking-Ashley.csv')
-dayna_walk_data = pd.read_csv('dayna-walk.csv')
-nick_walk_data['Label'] = 0     # Assign label 0 for walking
-ashley_walk_data['Label'] = 0   # Assign label 0 for walking
-dayna_walk_data['Label'] = 0    # Assign label 0 for walking
+brandon_walk_data = pd.read_csv('Brandon/walk.csv', encoding='utf-16')
+paolo_walk_data = pd.read_csv('Paolo/walk.csv', encoding='utf-16')
+shayan_walk_data = pd.read_csv('Shayan/walk.csv', encoding='utf-16')
+brandon_walk_data['Label'] = 0     # Assign label 0 for walking
+paolo_walk_data['Label'] = 0   # Assign label 0 for walking
+shayan_walk_data['Label'] = 0    # Assign label 0 for walking
 
 # Removed ordering stuff per request
 
@@ -53,17 +56,17 @@ def segment_data(data, chunk_size=500):
     return segments
 
 # Segment walking and jumping data for all
-walk_segments_nick = segment_data(nick_walk_data)
-walk_segments_ashley = segment_data(ashley_walk_data)
-walk_segments_dayna = segment_data(dayna_walk_data)
+walk_segments_brandon = segment_data(brandon_walk_data)
+walk_segments_paolo = segment_data(paolo_walk_data)
+walk_segments_shayan = segment_data(shayan_walk_data)
 
-jump_segments_nick = segment_data(nick_jump_data)
-jump_segments_ashley = segment_data(ashley_jump_data)
-jump_segments_dayna = segment_data(dayna_jump_data)
+jump_segments_brandon = segment_data(brandon_jump_data)
+jump_segments_paolo = segment_data(paolo_jump_data)
+jump_segments_shayan = segment_data(shayan_jump_data)
 
 # Combine segmented data
-walk_segments = walk_segments_nick + walk_segments_ashley + walk_segments_dayna
-jump_segments = jump_segments_nick + jump_segments_ashley + jump_segments_dayna
+walk_segments = walk_segments_brandon + walk_segments_paolo + walk_segments_shayan
+jump_segments = jump_segments_brandon + jump_segments_paolo + jump_segments_shayan
 combined_data = walk_segments + jump_segments
 
 # Filter out segments that do not match the expected shape for each group
@@ -84,12 +87,12 @@ train_data, test_data = train_test_split(combined_df, test_size=0.1, random_stat
 # ** Store Data in HDF5 File **
 with h5py.File("motion_data.h5", "w") as hdf:
     # Store raw data
-    hdf.create_dataset("raw_data/nick_jumping", data=nick_jump_data.to_numpy())
-    hdf.create_dataset("raw_data/ashley_jumping", data=ashley_jump_data.to_numpy())
-    hdf.create_dataset("raw_data/dayna_jumping", data=dayna_jump_data.to_numpy())
-    hdf.create_dataset("raw_data/nick_walking", data=nick_walk_data.to_numpy())
-    hdf.create_dataset("raw_data/ashley_walking", data=ashley_walk_data.to_numpy())
-    hdf.create_dataset("raw_data/dayna_walking", data=dayna_walk_data.to_numpy())
+    hdf.create_dataset("raw_data/brandon_jumping", data=brandon_jump_data.to_numpy())
+    hdf.create_dataset("raw_data/paolo_jumping", data=paolo_jump_data.to_numpy())
+    hdf.create_dataset("raw_data/shayan_jumping", data=shayan_jump_data.to_numpy())
+    hdf.create_dataset("raw_data/brandon_walking", data=brandon_walk_data.to_numpy())
+    hdf.create_dataset("raw_data/paolo_walking", data=paolo_walk_data.to_numpy())
+    hdf.create_dataset("raw_data/shayan_walking", data=shayan_walk_data.to_numpy())
 
     # Store segmented data; np.stack() enforces uniform shape
     hdf.create_dataset("segmented_data/walking", data=np.stack([s.to_numpy() for s in walk_segments]))
@@ -105,35 +108,38 @@ print("Data successfully stored in motion_data.h5")
 
 # 1. Basic Acceleration Graphs
 
-# Nick - Jumping data, X-axis only
+# Brandon - Jumping data, X-axis only
 plt.figure(figsize=(8, 4))
-plt.plot(nick_jump_data['Time (s)'], nick_jump_data['Acceleration x (m/s^2)'], color='blue')
+plt.plot(brandon_jump_data['Time (s)'], brandon_jump_data['Acceleration x (m/s^2)'], color='blue')
 plt.xlabel('Time (s)')
 plt.ylabel('X-Axis Acceleration (m/s²)')
-plt.title('Nick - Jumping (X-Axis Only)')
+plt.title('Brandon - Jumping (X-Axis Only)')
 plt.grid(True)
 plt.tight_layout()
-plt.show()
+plt.savefig('brandon_jumping_x.png')
+plt.close()
 
-# Ashley - Walking data, Y-axis only
+# Paolo - Walking data, Y-axis only
 plt.figure(figsize=(8, 4))
-plt.plot(ashley_walk_data['Time (s)'], ashley_walk_data['Acceleration y (m/s^2)'], color='green')
+plt.plot(paolo_walk_data['Time (s)'], paolo_walk_data['Acceleration y (m/s^2)'], color='green')
 plt.xlabel('Time (s)')
 plt.ylabel('Y-Axis Acceleration (m/s²)')
-plt.title('Ashley - Walking (Y-Axis Only)')
+plt.title('Paolo - Walking (Y-Axis Only)')
 plt.grid(True)
 plt.tight_layout()
-plt.show()
+plt.savefig('paolo_walking_y.png')
+plt.close()
 
-# Dayna - Jumping data, Z-axis only
+# Shayan - Jumping data, Z-axis only
 plt.figure(figsize=(8, 4))
-plt.plot(dayna_jump_data['Time (s)'], dayna_jump_data['Acceleration z (m/s^2)'], color='red')
+plt.plot(shayan_jump_data['Time (s)'], shayan_jump_data['Acceleration z (m/s^2)'], color='red')
 plt.xlabel('Time (s)')
 plt.ylabel('Z-Axis Acceleration (m/s²)')
-plt.title('Dayna - Jumping (Z-Axis Only)')
+plt.title('Shayan - Jumping (Z-Axis Only)')
 plt.grid(True)
 plt.tight_layout()
-plt.show()
+plt.savefig('shayan_jumping_z.png')
+plt.close()
 
 # 2. Segment 10 Visualization
 
@@ -155,24 +161,25 @@ def plot_segment_10_x(segments_walk, segments_jump, name):
     plt.legend()
 
     plt.tight_layout()
-    plt.show()
+    plt.savefig(f'segment_10_{name.lower()}.png')
+    plt.close()
 
 # Segments created in Step 2
 
-plot_segment_10_x(walk_segments_nick, jump_segments_nick, "Nick")
-plot_segment_10_x(walk_segments_ashley, jump_segments_ashley, "Ashley")
-plot_segment_10_x(walk_segments_dayna, jump_segments_dayna, "Dayna")
+plot_segment_10_x(walk_segments_brandon, jump_segments_brandon, "Brandon")
+plot_segment_10_x(walk_segments_paolo, jump_segments_paolo, "Paolo")
+plot_segment_10_x(walk_segments_shayan, jump_segments_shayan, "Shayan")
 
 # 3. Metadata Plot: Time-Based Recording Durations
 
-nick_walk = pd.read_csv("Meta Data/nick_walk_time.csv")
-nick_jump = pd.read_csv("Meta Data/nick_jump_time.csv")
+brandon_walk = pd.read_csv("Meta Data/brandon_walk_time.csv")
+brandon_jump = pd.read_csv("Meta Data/brandon_jump_time.csv")
 
-ashley_walk = pd.read_csv("Meta Data/ashley_walk_time.csv")
-ashley_jump = pd.read_csv("Meta Data/ashley_jump_time.csv")
+paolo_walk = pd.read_csv("Meta Data/paolo_walk_time.csv")
+paolo_jump = pd.read_csv("Meta Data/paolo_jump_time.csv")
 
-dayna_walk = pd.read_csv("Meta Data/dayna_walk_time.csv")
-dayna_jump = pd.read_csv("Meta Data/dayna_jump_time.csv")
+shayan_walk = pd.read_csv("Meta Data/shayan_walk_time.csv")
+shayan_jump = pd.read_csv("Meta Data/shayan_jump_time.csv")
 
 # --- Function to Calculate Duration in Seconds ---
 def get_duration(df):
@@ -184,9 +191,9 @@ def get_duration(df):
 
 # --- Compute Total Durations ---
 durations = {
-    "Nick": get_duration(nick_walk) + get_duration(nick_jump),
-    "Ashley": get_duration(ashley_walk) + get_duration(ashley_jump),
-    "Dayna": get_duration(dayna_walk) + get_duration(dayna_jump),
+    "Brandon": get_duration(brandon_walk) + get_duration(brandon_jump),
+    "Paolo": get_duration(paolo_walk) + get_duration(paolo_jump),
+    "Shayan": get_duration(shayan_walk) + get_duration(shayan_jump),
 }
 
 plt.figure(figsize=(8, 5))
@@ -195,7 +202,8 @@ plt.ylabel("Total Time Collected (seconds)")
 plt.title("Total Data Collection Time per Person")
 plt.grid(axis='y')
 plt.tight_layout()
-plt.show()
+plt.savefig('data_collection_durations.png')
+plt.close()
 
 # --- Step 4: Pre-processing ---
 
@@ -251,7 +259,8 @@ plt.ylabel('Acceleration (m/s²)')
 plt.legend()
 plt.grid(True)
 plt.tight_layout()
-plt.show()
+plt.savefig('raw_vs_preprocessed.png')
+plt.close()
 
 #---------Step 5: Feature extraction & normalization-----------
 def extract_features(segment):
@@ -311,7 +320,8 @@ print(f'Recall: {recall:.4f}')
 confused=confusion_matrix(y_test, y_prediction)
 ConfusionMatrixDisplay(confused).plot()
 plt.title('Confusion Matrix')
-plt.show()
+plt.savefig('confusion_matrix.png')
+plt.close()
 
 #ROC
 def plot_roc (y_true, y_score, label=1):
@@ -319,7 +329,8 @@ def plot_roc (y_true, y_score, label=1):
     roc_auc= roc_auc_score(y_true, y_score[:, label])
     RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc).plot()
     plt.title(f'ROC Curve (AUC= {roc_auc:.4f})')
-    plt.show()
+    plt.savefig('roc_curve.png')
+    plt.close()
 plot_roc(y_test,y_clf_prob)
 
 # --- Section 7: Deploying the trained classifier in a Desktop App ---
